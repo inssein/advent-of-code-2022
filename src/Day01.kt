@@ -18,28 +18,22 @@ fun main() {
         return max
     }
 
-    /**
-     * Could optimize this implementation by creating a data structure that only holds the top 3 numbers, which would
-     * void the need to sort the entire array.
-     */
     fun part2(input: List<String>): Int {
-        var current = 0
-
-        val food = input.fold(listOf<Int>()) { acc, it ->
+        val food = input.fold(0 to sortedSetOf<Int>()) { (sum, acc), it ->
             if (it.isEmpty()) {
-                acc
-                    .plus(current)
-                    .also { current = 0 }
-            } else {
-                current += it.toInt()
-                acc
-            }
-        }
+                acc.add(sum)
 
-        return food
-            .sortedDescending()
-            .take(3)
-            .fold(0) { acc, it -> acc + it }
+                if (acc.size > 3) {
+                    acc.remove(acc.first())
+                }
+
+                0 to acc
+            } else {
+                sum + it.toInt() to acc
+            }
+        }.second
+
+        return food.sum()
     }
 
     // test if implementation meets criteria from the description, like:
@@ -47,6 +41,8 @@ fun main() {
     check(part1(testInput) == 24000)
 
     val input = readInput("Day01")
+    check(part2(input) == 200116)
+
     println(part1(input))
     println(part2(input))
 }
