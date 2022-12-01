@@ -1,3 +1,5 @@
+import java.util.PriorityQueue
+
 fun main() {
     fun part1(input: List<String>): Int {
         var max = 0
@@ -19,12 +21,12 @@ fun main() {
     }
 
     fun part2(input: List<String>): Int {
-        val food = input.fold(0 to sortedSetOf<Int>()) { (sum, acc), it ->
+        val top3 = input.fold(0 to PriorityQueue<Int>()) { (sum, acc), it ->
             if (it.isEmpty()) {
                 acc.add(sum)
 
                 if (acc.size > 3) {
-                    acc.remove(acc.first())
+                    acc.poll()
                 }
 
                 0 to acc
@@ -33,7 +35,7 @@ fun main() {
             }
         }.second
 
-        return food.sum()
+        return top3.sum()
     }
 
     // test if implementation meets criteria from the description, like:
