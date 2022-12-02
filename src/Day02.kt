@@ -2,21 +2,14 @@ enum class Hand(val score: Int) {
     ROCK(1),
     PAPER(2),
     SCISSORS(3);
-
-    fun winScore() = (score % 3) + 1
-    fun loseScore() = if (score == 1) 3 else score - 1
-
-    companion object {
-        fun fromChar(c: Char) = when (c) {
-            'A', 'X' -> ROCK
-            'B', 'Y' -> PAPER
-            'C', 'Z' -> SCISSORS
-            else -> error("Invalid")
-        }
-    }
 }
 
-fun Char.toHand() = Hand.fromChar(this)
+fun Char.toHand() = when (this) {
+    'A', 'X' -> Hand.ROCK
+    'B', 'Y' -> Hand.PAPER
+    'C', 'Z' -> Hand.SCISSORS
+    else -> error("Invalid hand: $this")
+}
 
 fun main() {
     fun part1(input: List<String>): Int {
@@ -37,11 +30,11 @@ fun main() {
         return input.sumOf {
             val request = it.first().toHand()
 
-            when (it.last()) {
-                'X' -> request.loseScore()
+            when (val outcome = it.last()) {
+                'X' -> if (request.score == 1) 3 else request.score - 1
                 'Y' -> 3 + request.score
-                'Z' -> 6 + request.winScore()
-                else -> error("Invalid")
+                'Z' -> 6 + (request.score % 3) + 1
+                else -> error("Invalid outcome: $outcome")
             }
         }
     }
