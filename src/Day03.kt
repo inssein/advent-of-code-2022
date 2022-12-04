@@ -9,8 +9,8 @@ fun main() {
 
     fun part1(input: List<String>): Int {
         return input.sumOf {
-            val firstHalf = it.substring(0, it.length / 2)
-            val secondHalf = it.substring(it.length / 2)
+            val firstHalf = it.take(it.length / 2)
+            val secondHalf = it.takeLast(it.length / 2)
 
             findCommon(firstHalf, secondHalf)
                 .first()
