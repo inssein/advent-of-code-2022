@@ -5,12 +5,11 @@ sealed class Node {
     data class File(override val name: String, override val size: Int) : Node()
 
     data class Directory(
-        override val name: String, 
+        override val name: String,
         val parent: Directory?,
         val children: MutableList<Node> = mutableListOf()
     ) : Node() {
-
-        override val size get() = children.fold(0) { acc, it -> acc + it.size }
+        override val size get() = children.sumOf { it.size }
 
         fun findDirectories(predicate: (Directory) -> Boolean): List<Directory> {
             val directories = children.filterIsInstance(Directory::class.java)
