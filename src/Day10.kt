@@ -21,10 +21,8 @@ fun main() {
 
     fun part2(input: List<String>): String {
         return buildSignal(input)
-            .mapIndexed { pixel, signal ->
-                val index = pixel % 40
-
-                if (index in signal - 1..signal + 1) {
+            .mapIndexed { index, signal ->
+                if (index % 40 in signal - 1..signal + 1) {
                     "#"
                 } else {
                     "."
