@@ -24,7 +24,7 @@ fun main() {
             .mapIndexed { pixel, signal ->
                 val index = pixel % 40
 
-                if (index >= signal - 1 && index <= signal + 1) {
+                if (index in signal - 1..signal + 1) {
                     "#"
                 } else {
                     "."
