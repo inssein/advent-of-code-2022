@@ -20,11 +20,9 @@ data class Grid(val grid: List<List<Int>>) {
         while (queue.isNotEmpty()) {
             val (point, elevation) = queue.poll()
 
-            if (point in visited) {
+            if (!visited.add(point)) {
                 continue
             }
-
-            visited.add(point)
 
             val neighbours = neighbours(point, isValidNeighbour)
 
