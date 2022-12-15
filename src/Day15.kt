@@ -2,9 +2,9 @@ import kotlin.math.abs
 
 fun main() {
     data class Sensor(val position: Pair<Int, Int>, val distance: Int)
-    data class Beacon(val position: Pair<Int, Int>, val sensors: MutableList<Sensor>)
+    data class Beacon(val position: Pair<Int, Int>, val sensors: MutableList<Sensor> = mutableListOf())
 
-    fun List<String>.toBeaconMap() = this.fold(mutableMapOf<Pair<Int, Int>, Beacon>()) { acc, it ->
+    fun List<String>.toBeaconMap() = this.fold(mutableMapOf<Pair<Int, Int>, Beacon>()) { map, it ->
         val parts = it.split("=")
         val sX = parts[1].substringBefore(",").toInt()
         val sY = parts[2].substringBefore(":").toInt()
@@ -13,13 +13,10 @@ fun main() {
         val beacon = bX to bY
         val sensor = Sensor(sX to sY, abs(sX - bX) + abs(sY - bY))
 
-        if (acc.contains(beacon)) {
-            acc[beacon]?.sensors?.add(sensor)
-        } else {
-            acc[beacon] = Beacon(beacon, mutableListOf(sensor))
-        }
-
-        acc
+        map.getOrDefault(beacon, Beacon(beacon))
+            .also { it.sensors.add(sensor) }
+            .let { map[beacon] = it }
+            .let { map }
     }
 
     fun List<Sensor>.toCoverage(row: Int) = this.mapNotNull {
@@ -35,16 +32,30 @@ fun main() {
         }
     }
 
+    fun List<IntRange>.collapse() = this
+        .sortedBy { it.first }
+        .fold(listOf<IntRange>()) { acc, it ->
+            val last = acc.lastOrNull() ?: return@fold acc.plusElement(it)
+
+            when {
+                last.last < it.first -> acc.plusElement(it)
+                last.last < it.last -> acc.dropLast(1).plusElement(last.first..it.last)
+                else -> acc
+            }
+        }
+
     fun part1(input: List<String>, row: Int): Int {
         val beaconMap = input.toBeaconMap()
         val sensors = beaconMap.values.flatMap { it.sensors }
-        val ranges = sensors.toCoverage(row)
 
-        // @note: this would not work if there was a gap in the range
-        val minX = ranges.minOf { it.first }
-        val maxX = ranges.maxOf { it.last }
+        // @note: this only works because there is no gap
+        val firstRange = sensors
+            .toCoverage(row)
+            .collapse()
+            .first()
 
-        return maxX - minX
+        // @note: this is intentionally off by one to account for the beacon
+        return firstRange.last - firstRange.first
     }
 
     fun part2(input: List<String>, max: Int): Long {
@@ -54,7 +65,11 @@ fun main() {
 
         for (y in 0..max) {
             var minX = 0
-            val coverage = sensors.toCoverage(y).sortedBy { it.first }
+            val coverage = sensors.toCoverage(y).collapse()
+
+            if (coverage.size == 1) {
+                continue
+            }
 
             // find a gap in the range
             for (r in coverage) {
