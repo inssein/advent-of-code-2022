@@ -1,7 +1,7 @@
 import kotlin.math.max
 
 fun main() {
-    fun List<String>.toDeltas() = this.first().map { if (it == '>') 1 else -1 }
+    fun List<String>.toJetDeltas() = this.first().map { if (it == '>') 1 else -1 }
 
     val rocks = listOf(
         listOf(Pair(0, 0), Pair(1, 0), Pair(2, 0), Pair(3, 0)),
@@ -11,14 +11,13 @@ fun main() {
         listOf(Pair(0, 0), Pair(0, 1), Pair(1, 0), Pair(1, 1))
     )
 
-    fun List<Pair<Int, Int>>.canPushTo(toX: Int, toY: Int, dropped: Set<Pair<Int, Int>>) = this
-        .map { (x, y) -> x + toX to y + toY }
-        .all { it.first in 0..6 && !dropped.contains(it) }
+    fun List<Pair<Int, Int>>.canPushTo(toX: Int, toY: Int, chamber: Set<Pair<Int, Int>>) =
+        this.map { (x, y) -> x + toX to y + toY }.all { it.first in 0..6 && !chamber.contains(it) }
 
-    fun List<Pair<Int, Int>>.canDropDown(toX: Int, toY: Int, dropped: Set<Pair<Int, Int>>) = toY > 1
-            && this.map { (x, y) -> x + toX to y + toY - 1 }.none { dropped.contains(it) }
+    fun List<Pair<Int, Int>>.canDropDown(toX: Int, toY: Int, dropped: Set<Pair<Int, Int>>) =
+        toY > 1 && this.map { (x, y) -> x + toX to y + toY - 1 }.none { dropped.contains(it) }
 
-    fun drop(jets: List<Int>, numRocks: Long): Long {
+    fun drop(jetDeltas: List<Int>, numRocks: Long): Long {
         var floor = 0
         var jetOffset = 0
         val cache = mutableMapOf<Pair<Int, Int>, Pair<Int, Int>>()
@@ -31,7 +30,7 @@ fun main() {
             var rockY = floor + 4
 
             while (true) {
-                val jetIndex = jetOffset++ % jets.size
+                val jetIndex = jetOffset++ % jetDeltas.size
                 val cached = cache[rockIndex to jetIndex]
 
                 if (cached != null) {
@@ -39,7 +38,7 @@ fun main() {
                     val period = i - prevRockNum
 
                     // @note: not sure if this is the best way to detect a cycle
-                    if (i > jets.size * 3 && i % period == numRocks % period) {
+                    if (i > jetDeltas.size * 3 && i % period == numRocks % period) {
                         val cycleHeight = floor - elevation
                         val rocksRemaining = numRocks - i
                         val cyclesRemaining = (rocksRemaining / period) + 1
@@ -49,10 +48,10 @@ fun main() {
                     cache[rockIndex to jetIndex] = i.toInt() to floor
                 }
 
-                val dropTo = rockX + jets[jetIndex]
+                val pushTo = rockX + jetDeltas[jetIndex]
 
-                if (rock.canPushTo(dropTo, rockY, chamber)) {
-                    rockX = dropTo
+                if (rock.canPushTo(pushTo, rockY, chamber)) {
+                    rockX = pushTo
                 }
 
                 if (rock.canDropDown(rockX, rockY, chamber)) {
@@ -71,11 +70,11 @@ fun main() {
     }
 
     fun part1(input: List<String>): Long {
-        return drop(input.toDeltas(), 2022)
+        return drop(input.toJetDeltas(), 2022)
     }
 
     fun part2(input: List<String>): Long {
-        return drop(input.toDeltas(), 1_000_000_000_000)
+        return drop(input.toJetDeltas(), 1_000_000_000_000)
     }
 
     val testInput = readInput("Day17_test")
