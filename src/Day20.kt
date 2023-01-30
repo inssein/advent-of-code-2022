@@ -18,7 +18,7 @@ fun main() {
         }
 
         // strip out temporary data structure
-        return data.map { (_, value) -> value }
+        return data.map { it.value }
     }
 
     fun List<Long>.grooveCoordinates() = indexOf(0).let { zero ->
